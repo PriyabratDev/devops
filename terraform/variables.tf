@@ -31,7 +31,7 @@ variable "bucket_name" {
 }
 
 variable "ami_id" {
-  default     = "ami-083e865b97bdf1c1b" # Amazon Linux 2023
+  default = "ami-083e865b97bdf1c1b" # Amazon Linux 2023
 }
 
 variable "instance_type" {

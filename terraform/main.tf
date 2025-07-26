@@ -72,7 +72,7 @@ resource "aws_iam_role" "codebuild_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
+      Effect    = "Allow",
       Principal = { Service = "codebuild.amazonaws.com" },
       Action    = "sts:AssumeRole"
     }]
@@ -86,8 +86,8 @@ resource "aws_iam_role_policy" "codebuild_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Action = ["logs:*", "s3:*"],
+        Effect   = "Allow",
+        Action   = ["logs:*", "s3:*"],
         Resource = "*"
       }
     ]
@@ -121,7 +121,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
 }
 
 resource "aws_codedeploy_app" "app" {
-  name           = "${var.project_name}-codedeploy-app"
+  name             = "${var.project_name}-codedeploy-app"
   compute_platform = "Server"
 }
 
@@ -146,19 +146,19 @@ resource "aws_codedeploy_deployment_group" "group" {
 
 # CodeBuild project - ensure correct working directory
 resource "aws_codebuild_project" "build" {
-  name          = "${var.project_name}-build"
-  service_role  = aws_iam_role.codebuild_role.arn
+  name         = "${var.project_name}-build"
+  service_role = aws_iam_role.codebuild_role.arn
 
   artifacts {
     type = "CODEPIPELINE"
   }
 
   environment {
-  compute_type = "BUILD_GENERAL1_SMALL"
-  image        = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
-  type         = "LINUX_CONTAINER"
-  
-}
+    compute_type = "BUILD_GENERAL1_SMALL"
+    image        = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
+    type         = "LINUX_CONTAINER"
+
+  }
   source {
     type      = "CODEPIPELINE"
     buildspec = "project-task-1/buildspec.yml"
@@ -177,11 +177,11 @@ resource "aws_codepipeline" "pipeline" {
   stage {
     name = "Source"
     action {
-      name           = "GitHub_Source"
-      category       = "Source"
-      owner          = "ThirdParty"
-      provider       = "GitHub"
-      version        = "1"
+      name             = "GitHub_Source"
+      category         = "Source"
+      owner            = "ThirdParty"
+      provider         = "GitHub"
+      version          = "1"
       output_artifacts = ["source_output"]
       configuration = {
         Owner      = var.github_owner
@@ -229,11 +229,11 @@ resource "aws_iam_role" "ec2_role" {
   name = "${var.project_name}-ec2-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [ {
-      Effect = "Allow",
+    Statement = [{
+      Effect    = "Allow",
       Principal = { Service = "ec2.amazonaws.com" },
-      Action = "sts:AssumeRole"
-    } ]
+      Action    = "sts:AssumeRole"
+    }]
   })
 }
 

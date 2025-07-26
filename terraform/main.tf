@@ -23,12 +23,18 @@ resource "aws_s3_bucket_public_access_block" "artifact_block" {
   restrict_public_buckets = true
 }
 
+resource "aws_kms_key" "s3_key" {
+  description = "KMS key for S3 bucket encryption"
+  enable_key_rotation = true
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "artifact_encrypt" {
   bucket = aws_s3_bucket.artifact_bucket.id
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      kms_master_key_id = aws_kms_key.s3_key.arn
+      sse_algorithm     = "aws:kms"
     }
   }
 }
@@ -107,13 +113,53 @@ resource "aws_iam_role" "codebuild_role" {
 resource "aws_iam_role_policy" "codebuild_policy" {
   name = "${var.project_name}-codebuild-policy"
   role = aws_iam_role.codebuild_role.id
+
   policy = jsonencode({
-    Version = "2012-10-17",
+    Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow",
-        Action   = ["logs:*", "s3:*"],
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:PutImage",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload"
+        ]
+        Resource = aws_ecr_repository.app_repository.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetBucketVersioning",
+          "s3:GetObject",
+          "s3:GetObjectVersion",
+          "s3:PutObject"
+        ]
+        Resource = [
+          aws_s3_bucket.codepipeline_artifacts.arn,
+          "${aws_s3_bucket.codepipeline_artifacts.arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt",
+          "kms:GenerateDataKey"
+        ]
+        Resource = [
+          aws_kms_key.s3_key.arn,
+          aws_kms_key.ecr_key.arn
+        ]
       }
     ]
   })

@@ -15,6 +15,31 @@ resource "aws_s3_bucket_versioning" "versioning" {
   }
 }
 
+resource "aws_s3_bucket_public_access_block" "artifact_block" {
+  bucket                  = aws_s3_bucket.artifact_bucket.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "artifact_encrypt" {
+  bucket = aws_s3_bucket.artifact_bucket.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_logging" "artifact_log" {
+  bucket        = aws_s3_bucket.artifact_bucket.id
+  target_bucket = aws_s3_bucket.artifact_bucket.id
+  target_prefix = "log/"
+}
+
+
 # --- Start: Network Resources (VPC, Subnet, Internet Gateway, Route Table) ---
 
 resource "aws_vpc" "main" {
@@ -31,7 +56,7 @@ resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "${var.aws_region}a"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
     Name = "${var.project_name}-public-subnet"
@@ -115,7 +140,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
-      { Effect = "Allow", Action = ["*"], Resource = "*" }
+      { Effect = "Allow", Action = ["ec2:DescribeInstances"], Resource = "*" }
     ]
   })
 }
@@ -279,18 +304,21 @@ resource "aws_security_group" "web_sg" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTP from anywhere"
   }
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow SSH from anywhere"
   }
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound"
   }
 }
 
@@ -304,6 +332,15 @@ resource "aws_instance" "web" {
   tags = {
     "${var.instance_tag_key}" = var.instance_tag_value
   }
+
+  metadata_options {
+    http_tokens = "required"
+  }
+
+  root_block_device {
+    encrypted = true
+  }
+
   user_data = <<-EOF
     #!/bin/bash
     yum update -y

@@ -9,16 +9,19 @@ variable "project_name" {
 variable "github_token" {
   description = "GitHub token"
   type        = string
+  default = "gp_token"
 }
 
 variable "github_owner" {
   description = "GitHub username"
   type        = string
+  default = "gp-ops"
 }
 
 variable "github_repo" {
   description = "GitHub repo name"
   type        = string
+  default = "project"
 }
 
 variable "github_branch" {
@@ -28,6 +31,7 @@ variable "github_branch" {
 variable "bucket_name" {
   description = "Artifact bucket name"
   type        = string
+  default     = "dvscops-artifact-bucket"
 }
 
 variable "ami_id" {
@@ -41,6 +45,7 @@ variable "instance_type" {
 variable "key_name" {
   description = "EC2 key pair name"
   type        = string
+  default     = "my-key-pair"
 }
 
 variable "instance_tag_key" {

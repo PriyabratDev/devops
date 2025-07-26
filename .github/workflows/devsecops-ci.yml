@@ -21,10 +21,14 @@ jobs:
         run: echo "${{ secrets.TERRAFORM_TFVARS }}" > terraform.tfvars
 
       - name: Terraform Init
-        run: terraform init
+        run: |
+          cd terraform
+          terraform init
 
       - name: Terraform Validate
-        run: terraform validate
+        run: |
+          cd terraform
+          terraform validate
 
       - name: Run tfsec (Terraform security scan)
         uses: aquasecurity/tfsec-action@v1.0.0

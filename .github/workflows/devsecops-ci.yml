@@ -30,10 +30,14 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.0
 
       - name: Terraform Plan (to validate tfvars)
-        run: terraform plan -input=false
+        run: |
+          terraform plan -input=false \
+          -var "allowed_ip_range=${{ env.ALLOWED_IP_RANGE }}"
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+        run: |
+          terraform apply -auto-approve -input=false \
+          -var "allowed_ip_range=${{ env.ALLOWED_IP_RANGE }}"
 
   docker-security:
     name: Docker Build & Trivy Scan

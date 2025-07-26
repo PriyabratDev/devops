@@ -31,11 +31,13 @@ jobs:
 
       - name: Terraform Plan (to validate tfvars)
         run: |
+          cd terraform
           terraform plan -input=false \
           -var "allowed_ip_range=${{ env.ALLOWED_IP_RANGE }}"
 
       - name: Terraform Apply
         run: |
+          cd terraform
           terraform apply -auto-approve -input=false \
           -var "allowed_ip_range=${{ env.ALLOWED_IP_RANGE }}"
 

@@ -36,7 +36,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "artifact_encrypt"
 resource "aws_s3_bucket_logging" "artifact_log" {
   bucket        = aws_s3_bucket.artifact_bucket.id
   target_bucket = aws_s3_bucket.artifact_bucket.id
-  target_prefix = "log/"
+  target_prefix = "log-bucket-access-logs/"
 }
 
 

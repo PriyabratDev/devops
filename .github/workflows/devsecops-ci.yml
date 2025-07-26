@@ -26,8 +26,7 @@ jobs:
           terraform init
 
       - name: Terraform Validate
-        run: |
-          cd terraform
+        run: 
           terraform validate
 
       - name: Run tfsec (Terraform security scan)

@@ -23,6 +23,19 @@ resource "aws_s3_bucket_public_access_block" "artifact_block" {
   restrict_public_buckets = true
 }
 
+resource "aws_ecr_repository" "app_repository" {
+  name = "${var.project_name}-ecr"
+}
+
+resource "aws_s3_bucket" "codepipeline_artifacts" {
+  bucket = "${var.project_name}-artifacts-bucket"
+}
+
+resource "aws_kms_key" "ecr_key" {
+  description             = "KMS key for ECR encryption"
+  deletion_window_in_days = 10
+}
+
 resource "aws_kms_key" "s3_key" {
   description = "KMS key for S3 bucket encryption"
   enable_key_rotation = true

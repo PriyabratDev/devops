@@ -335,6 +335,29 @@ resource "aws_codedeploy_deployment_group" "group" {
   }
 }
 
+resource "aws_iam_role_policy" "codepipeline_codedeploy_policy" {
+  name = "${var.project_name}-codepipeline-codedeploy-policy"
+  role = aws_iam_role.codepipeline_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "codedeploy:CreateDeployment",
+          "codedeploy:GetDeployment",
+          "codedeploy:RegisterApplicationRevision"
+        ],
+        Resource = [
+          "arn:aws:codedeploy:us-east-1:${data.aws_caller_identity.current.account_id}:deploymentgroup:${var.project_name}-codedeploy-app/${var.project_name}-deploy-group",
+          "arn:aws:codedeploy:us-east-1:${data.aws_caller_identity.current.account_id}:application:${var.project_name}-codedeploy-app"
+        ]
+      }
+    ]
+  })
+}
+
 # CodeBuild project - ensure correct working directory
 resource "aws_codebuild_project" "build" {
   name         = "${var.project_name}-build"

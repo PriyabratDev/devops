@@ -36,20 +36,7 @@ resource "aws_ecr_repository" "app_repository" {
     kms_key         = aws_kms_key.ecr_key.arn # Use customer-managed KMS key
   }
 }
-resource "aws_s3_bucket" "logging_bucket" {
-  bucket = "${var.project_name}-logs-bucket"
 
-  acl    = "log-delivery-write"
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = aws_kms_key.ecr_key.arn
-        sse_algorithm     = "aws:kms"
-      }
-    }
-  }
-}
 
 
 resource "aws_s3_bucket" "codepipeline_artifacts" {

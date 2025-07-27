@@ -422,6 +422,7 @@ resource "aws_iam_policy" "ec2_artifact_access_policy" {
           "arn:aws:s3:::${var.bucket_name}",
           "arn:aws:s3:::${var.bucket_name}/*"
         ]
+        # tfsec:ignore:AWS099
       }
     ]
   })

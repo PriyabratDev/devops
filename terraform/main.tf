@@ -225,7 +225,9 @@ resource "aws_iam_role_policy" "codebuild_policy" {
         ]
         Resource = [
           aws_s3_bucket.codepipeline_artifacts.arn,
-          "${aws_s3_bucket.codepipeline_artifacts.arn}/*"
+          "${aws_s3_bucket.codepipeline_artifacts.arn}/*",
+          aws_s3_bucket.artifact_bucket.arn,
+          "${aws_s3_bucket.artifact_bucket.arn}/*"
         ]
       },
       {

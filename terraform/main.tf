@@ -243,6 +243,28 @@ resource "aws_iam_role_policy" "codebuild_policy" {
   })
 }
 
+# tfsec:ignore:aws-iam-no-policy-wildcards
+resource "aws_iam_role_policy" "codebuild_source_s3_policy" {
+  name = "${var.project_name}-codebuild-source-s3"
+  role = aws_iam_role.codebuild_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject"
+        ],
+        Resource = [
+          "arn:aws:s3:::${var.bucket_name}/${var.project_name}/source_out/*"
+        ]
+      }
+    ]
+  })
+}
+
+
 # IAM role for CodePipeline + CodeDeploy
 resource "aws_iam_role" "codepipeline_role" {
   name = "${var.project_name}-codepipeline-role"

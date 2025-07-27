@@ -375,7 +375,9 @@ resource "aws_iam_policy" "ec2_artifact_access_policy" {
         Action = [
           "s3:GetObject",
           "s3:GetObjectVersion",
-          "s3:ListBucket"
+          "s3:ListBucket",
+          "s3:PutObject",
+          "s3:DeleteObject"
         ],
         Resource = [
           "arn:aws:s3:::${var.bucket_name}",

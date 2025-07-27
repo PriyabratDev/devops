@@ -609,6 +609,8 @@ resource "aws_instance" "web" {
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   subnet_id              = aws_subnet.public.id
+  
+  associate_public_ip_address = true
   tags = {
     "${var.instance_tag_key}" = var.instance_tag_value
   }
@@ -619,6 +621,8 @@ resource "aws_instance" "web" {
 
   root_block_device {
     encrypted = true
+    volume_size = 20
+    volume_type = "gp3"
   }
 
   user_data = <<-EOF

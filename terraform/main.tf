@@ -98,6 +98,29 @@ resource "aws_s3_bucket_logging" "artifact_log" {
   target_prefix = "log-bucket-access-logs/"
 }
 
+# tfsec:ignore:aws-iam-no-policy-wildcards
+resource "aws_iam_role_policy" "codebuild_logs_policy" {
+  name = "${var.project_name}-codebuild-logs-policy"
+  role = aws_iam_role.codebuild_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = [
+          "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/codebuild/${var.project_name}-build",
+          "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/codebuild/${var.project_name}-build:log-stream:*"
+        ]
+      }
+    ]
+  })
+}
 
 # --- Start: Network Resources (VPC, Subnet, Internet Gateway, Route Table) ---
 
@@ -150,6 +173,7 @@ resource "aws_route_table_association" "public_rt_association" {
 }
 
 # --- End: Network Resources ---
+
 
 # IAM role for CodeBuild
 resource "aws_iam_role" "codebuild_role" {

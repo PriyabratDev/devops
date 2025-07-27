@@ -96,7 +96,8 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG_BASE64 }}" | base64 -d > ~/.kube/config
 
-      - name: Apply Sealed Secrets
+      - name: Apply Sealed Secrets(local only)
+        if: false
         run: kubectl apply -f k8s/secrets/sealed-secret.yaml
 
       - name: Deploy App to Kubernetes

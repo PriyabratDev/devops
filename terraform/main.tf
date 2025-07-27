@@ -381,7 +381,10 @@ resource "aws_iam_role_policy" "codepipeline_s3_policy" {
           "s3:GetObject",
           "s3:GetObjectVersion"
         ],
-        Resource = "${aws_s3_bucket.codepipeline_artifacts.arn}/*"
+        Resource = [
+          "arn:aws:s3:::${var.bucket_name}",
+          "arn:aws:s3:::${var.bucket_name}/${var.project_name}/*"
+        ]
         
       }
     ]

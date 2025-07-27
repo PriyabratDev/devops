@@ -27,7 +27,8 @@ jobs:
           terraform_version: 1.5.5
 
       - name: Terraform Variables from repo secrets
-        run: echo "${{ secrets.TERRAFORM_TFVARS }}" > terraform/terraform.tfvars
+        run: printf "%s" "${{ secrets.TERRAFORM_TFVARS }}" > terraform/terraform.tfvars
+        shell: bash
 
       - name: Terraform Init
         run: |

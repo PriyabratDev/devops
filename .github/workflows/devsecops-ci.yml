@@ -36,7 +36,7 @@ jobs:
         run: |
           cd terraform
           terraform apply -auto-approve -input=false \
-          -var "allowed_ip_range=${{ env.ALLOWED_IP_RANGE }}"
+          -var "allowed_ip_range=106.222.191.221/32"
 
   docker-security:
     name: Docker Build & Trivy Scan

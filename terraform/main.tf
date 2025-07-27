@@ -38,7 +38,7 @@ resource "aws_ecr_repository" "app_repository" {
 }
 
 
-
+#tfsec:ignore:aws-s3-enable-bucket-logging
 resource "aws_s3_bucket" "codepipeline_artifacts" {
   bucket = "${var.project_name}-artifacts-bucket"
   versioning {

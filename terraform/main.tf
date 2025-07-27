@@ -15,6 +15,9 @@ resource "aws_s3_bucket_versioning" "versioning" {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
+
 resource "aws_s3_bucket_public_access_block" "artifact_block" {
   bucket                  = aws_s3_bucket.artifact_bucket.id
   block_public_acls       = true
@@ -378,7 +381,7 @@ resource "aws_iam_role_policy" "codepipeline_s3_policy" {
           "s3:GetObject",
           "s3:GetObjectVersion"
         ],
-        Resource = "${aws_s3_bucket.codepipeline_bucket.arn}/*"
+        Resource = "${aws_s3_bucket.codepipeline_artifacts.arn}/*"
       }
     ]
   })

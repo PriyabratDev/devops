@@ -345,11 +345,13 @@ resource "aws_iam_role_policy" "codepipeline_codedeploy_policy" {
       {
         Effect = "Allow",
         Action = [
+          "codedeploy:GetDeploymentConfig",
           "codedeploy:CreateDeployment",
           "codedeploy:GetDeployment",
           "codedeploy:RegisterApplicationRevision"
         ],
         Resource = [
+          "arn:aws:codedeploy:us-east-1:${data.aws_caller_identity.current.account_id}:deploymentconfig:CodeDeployDefault.OneAtATime",
           "arn:aws:codedeploy:us-east-1:${data.aws_caller_identity.current.account_id}:deploymentgroup:${var.project_name}-codedeploy-app/${var.project_name}-deploy-group",
           "arn:aws:codedeploy:us-east-1:${data.aws_caller_identity.current.account_id}:application:${var.project_name}-codedeploy-app"
         ]

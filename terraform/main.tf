@@ -54,10 +54,6 @@ resource "aws_s3_bucket" "codepipeline_artifacts" {
     }
   }
 
-  logging {
-    target_bucket = aws_s3_bucket.logging_bucket.id
-    target_prefix = "logs/${var.project_name}/"
-  }
 }
 
 # Enable Public Access Block

@@ -1,17 +1,7 @@
 provider "aws" {
   region = var.aws_region
 }
-# tfsec:ignore:aws-ecr-enable-image-scans
-# tfsec:ignore:aws-ecr-enforce-immutable-repository
-# tfsec:ignore:aws-ecr-repository-customer-key
-# tfsec:ignore:aws-s3-block-public-acls
-# tfsec:ignore:aws-s3-block-public-policy
-# tfsec:ignore:aws-s3-enable-bucket-encryption
-# tfsec:ignore:aws-s3-ignore-public-acls
-# tfsec:ignore:aws-s3-no-public-buckets
-# tfsec:ignore:aws-s3-encryption-customer-key
-# tfsec:ignore:aws-s3-enable-bucket-logging
-# tfsec:ignore:aws-s3-enable-versioning
+
 # S3 bucket to store artifacts
 resource "aws_s3_bucket" "artifact_bucket" {
   bucket        = var.bucket_name
@@ -35,10 +25,46 @@ resource "aws_s3_bucket_public_access_block" "artifact_block" {
 
 resource "aws_ecr_repository" "app_repository" {
   name = "${var.project_name}-ecr"
+  image_tag_mutability = "IMMUTABLE" # Enforce tag immutability
+
+  image_scanning_configuration {
+    scan_on_push = true # Enable image scanning
+  }
+
+  encryption_configuration {
+    encryption_type = "KMS"
+    kms_key         = aws_kms_key.ecr_key.arn # Use customer-managed KMS key
+  }
 }
 
 resource "aws_s3_bucket" "codepipeline_artifacts" {
   bucket = "${var.project_name}-artifacts-bucket"
+  versioning {
+    enabled = true
+  }
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = aws_kms_key.ecr_key.arn
+        sse_algorithm     = "aws:kms"
+      }
+    }
+  }
+
+  logging {
+    target_bucket = aws_s3_bucket.logging_bucket.id
+    target_prefix = "logs/${var.project_name}/"
+  }
+}
+
+# Enable Public Access Block
+resource "aws_s3_bucket_public_access_block" "codepipeline_artifacts_block" {
+  bucket                  = aws_s3_bucket.codepipeline_artifacts.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 

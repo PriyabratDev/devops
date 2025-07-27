@@ -9,16 +9,25 @@ jobs:
   validate-terraform:
     name: Terraform Validation & tfsec
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      
     steps:
       - uses: actions/checkout@v3
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4 # Use the latest stable version if available
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.5
 
       - name: Terraform Variables from repo secrets
-        run: echo "${{ secrets.TERRAFORM_TFVARS }}" > terraform.tfvars
+        run: echo "${{ secrets.TERRAFORM_TFVARS }}" > terraform/terraform.tfvars
 
       - name: Terraform Init
         run: |

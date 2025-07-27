@@ -49,12 +49,14 @@ jobs:
         run: |
           echo "⛔ Starting cleanup of existing AWS resources..."
 
+          AWS_REGION="us-east-1"
           BUCKETS=("my-artfct-bkt-123456" "devscops-artifacts-bucket")
           ROLES=("devscops-codebuild-role" "devscops-codepipeline-role" "devscops-ec2-role")
           POLICIES=("devscops-ec2-s3-access")
           ECR_REPO="devscops-ecr"
           CODEDEPLOY_APP="devscops-codedeploy-app"
 
+          # -------- Delete S3 Buckets --------
           for bucket in "${BUCKETS[@]}"; do
             if aws s3api head-bucket --bucket "$bucket" 2>/dev/null; then
               echo "Deleting S3 bucket: $bucket"
@@ -62,16 +64,30 @@ jobs:
             fi
           done
 
+          # -------- Delete IAM Roles --------
           for role in "${ROLES[@]}"; do
             if aws iam get-role --role-name "$role" 2>/dev/null; then
               echo "Deleting IAM Role: $role"
+
+              # Detach attached managed policies
               for policy_arn in $(aws iam list-attached-role-policies --role-name "$role" --query 'AttachedPolicies[*].PolicyArn' --output text); do
+                echo "Detaching managed policy $policy_arn from $role"
                 aws iam detach-role-policy --role-name "$role" --policy-arn "$policy_arn"
               done
+
+              # Delete inline policies
+              for policy_name in $(aws iam list-role-policies --role-name "$role" --query 'PolicyNames[*]' --output text); do
+                echo "Deleting inline policy $policy_name from $role"
+                aws iam delete-role-policy --role-name "$role" --policy-name "$policy_name"
+              done
+
+              # Delete the role
               aws iam delete-role --role-name "$role"
+              echo "✅ Deleted IAM Role: $role"
             fi
           done
 
+          # -------- Delete IAM Policies --------
           for policy in "${POLICIES[@]}"; do
             policy_arn=$(aws iam list-policies --scope Local --query "Policies[?PolicyName=='$policy'].Arn" --output text)
             if [ ! -z "$policy_arn" ]; then
@@ -80,14 +96,16 @@ jobs:
             fi
           done
 
-          if aws ecr describe-repositories --repository-names "$ECR_REPO" --region us-east-1 2>/dev/null; then
-            echo "Deleting ECR Repository: $ECR_REPO"
-            aws ecr delete-repository --repository-name "$ECR_REPO" --region us-east-1 --force
+          # -------- Delete ECR Repository --------
+          if aws ecr describe-repositories --repository-names "$ECR_REPO" --region "$AWS_REGION" 2>/dev/null; then
+            echo "Deleting ECR repository: $ECR_REPO"
+            aws ecr delete-repository --repository-name "$ECR_REPO" --region "$AWS_REGION" --force
           fi
 
-          if aws deploy get-application --application-name "$CODEDEPLOY_APP" --region us-east-1 2>/dev/null; then
-            echo "Deleting CodeDeploy Application: $CODEDEPLOY_APP"
-            aws deploy delete-application --application-name "$CODEDEPLOY_APP" --region us-east-1
+          # -------- Delete CodeDeploy App --------
+          if aws deploy get-application --application-name "$CODEDEPLOY_APP" --region "$AWS_REGION" 2>/dev/null; then
+            echo "Deleting CodeDeploy application: $CODEDEPLOY_APP"
+            aws deploy delete-application --application-name "$CODEDEPLOY_APP" --region "$AWS_REGION"
           fi
 
           echo "✅ Cleanup complete."

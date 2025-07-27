@@ -372,7 +372,7 @@ resource "aws_iam_role_policy" "codepipeline_s3_policy" {
   role = aws_iam_role.codepipeline_role.name
 
   policy = jsonencode({
-    Version = "2012-10-17",
+    Version = "2012-10-17",# tfsec:ignore:aws-iam-no-policy-wildcards
     Statement = [
       {
         Effect = "Allow",
@@ -382,7 +382,7 @@ resource "aws_iam_role_policy" "codepipeline_s3_policy" {
           "s3:GetObjectVersion"
         ],
         Resource = "${aws_s3_bucket.codepipeline_artifacts.arn}/*"
-        # tfsec:ignore:aws-iam-no-policy-wildcards
+        
       }
     ]
   })

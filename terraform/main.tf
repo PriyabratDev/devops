@@ -382,7 +382,7 @@ resource "aws_iam_role_policy" "codepipeline_s3_policy" {
           "s3:GetObjectVersion"
         ],
         Resource = "${aws_s3_bucket.codepipeline_artifacts.arn}/*"
-        # tfsec:ignore:AWS099
+        # tfsec:ignore:aws-iam-no-policy-wildcards
       }
     ]
   })

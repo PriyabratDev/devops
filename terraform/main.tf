@@ -316,6 +316,37 @@ resource "aws_codedeploy_app" "app" {
   compute_platform = "Server"
 }
 
+resource "aws_iam_role_policy" "deploy_ecr_policy" {
+  name = "${var.project_name}-deploy-ecr-access"
+  role = aws_iam_role.codepipeline_role.id  # or codedeploy_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:PutImage",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload"
+        ],
+        Resource = aws_ecr_repository.app_repository.arn
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 resource "aws_codedeploy_deployment_group" "group" {
   app_name              = aws_codedeploy_app.app.name
   deployment_group_name = "${var.project_name}-deploy-group"
@@ -342,26 +373,6 @@ resource "aws_iam_role_policy" "codepipeline_codedeploy_policy" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "ec2:DescribeInstances",
-          "ec2:DescribeInstanceStatus",
-          "ec2:TerminateInstances",
-          "ec2:StopInstances",
-          "ec2:StartInstances",
-          "ec2:RebootInstances",
-          "ec2:DescribeTags"
-        ],
-        Resource = aws_ecr_repository.app_repository.arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:GetAuthorizationToken"
-        ]
-        Resource = "*"
-      },
       {
         Effect = "Allow",
         Action = [

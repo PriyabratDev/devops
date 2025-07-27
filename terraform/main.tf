@@ -345,6 +345,26 @@ resource "aws_iam_role_policy" "codepipeline_codedeploy_policy" {
       {
         Effect = "Allow",
         Action = [
+          "ec2:DescribeInstances",
+          "ec2:DescribeInstanceStatus",
+          "ec2:TerminateInstances",
+          "ec2:StopInstances",
+          "ec2:StartInstances",
+          "ec2:RebootInstances",
+          "ec2:DescribeTags"
+        ],
+        Resource = aws_ecr_repository.app_repository.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
           "codedeploy:GetDeploymentConfig",
           "codedeploy:CreateDeployment",
           "codedeploy:GetDeployment",

@@ -64,12 +64,12 @@ jobs:
             fi
           done
 
-          # -------- Delete IAM Roles --------
+          # -------- Delete IAM Roles and Instance Profiles --------
           for role in "${ROLES[@]}"; do
             if aws iam get-role --role-name "$role" 2>/dev/null; then
               echo "Deleting IAM Role: $role"
 
-              # Detach attached managed policies
+              # Detach managed policies
               for policy_arn in $(aws iam list-attached-role-policies --role-name "$role" --query 'AttachedPolicies[*].PolicyArn' --output text); do
                 echo "Detaching managed policy $policy_arn from $role"
                 aws iam detach-role-policy --role-name "$role" --policy-arn "$policy_arn"
@@ -79,6 +79,14 @@ jobs:
               for policy_name in $(aws iam list-role-policies --role-name "$role" --query 'PolicyNames[*]' --output text); do
                 echo "Deleting inline policy $policy_name from $role"
                 aws iam delete-role-policy --role-name "$role" --policy-name "$policy_name"
+              done
+
+              # Remove from instance profiles
+              for instance_profile in $(aws iam list-instance-profiles-for-role --role-name "$role" --query 'InstanceProfiles[*].InstanceProfileName' --output text); do
+                echo "Removing $role from instance profile $instance_profile"
+                aws iam remove-role-from-instance-profile --instance-profile-name "$instance_profile" --role-name "$role"
+                echo "Deleting instance profile $instance_profile"
+                aws iam delete-instance-profile --instance-profile-name "$instance_profile"
               done
 
               # Delete the role

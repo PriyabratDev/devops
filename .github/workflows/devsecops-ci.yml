@@ -45,6 +45,53 @@ jobs:
       - name: Run tfsec (Terraform security scan)
         uses: aquasecurity/tfsec-action@v1.0.0
 
+      - name: Cleanup Existing AWS Resources (Optional)
+        run: |
+          echo "⛔ Starting cleanup of existing AWS resources..."
+
+          BUCKETS=("my-artfct-bkt-123456" "devscops-artifacts-bucket")
+          ROLES=("devscops-codebuild-role" "devscops-codepipeline-role" "devscops-ec2-role")
+          POLICIES=("devscops-ec2-s3-access")
+          ECR_REPO="devscops-ecr"
+          CODEDEPLOY_APP="devscops-codedeploy-app"
+
+          for bucket in "${BUCKETS[@]}"; do
+            if aws s3api head-bucket --bucket "$bucket" 2>/dev/null; then
+              echo "Deleting S3 bucket: $bucket"
+              aws s3 rb "s3://$bucket" --force
+            fi
+          done
+
+          for role in "${ROLES[@]}"; do
+            if aws iam get-role --role-name "$role" 2>/dev/null; then
+              echo "Deleting IAM Role: $role"
+              for policy_arn in $(aws iam list-attached-role-policies --role-name "$role" --query 'AttachedPolicies[*].PolicyArn' --output text); do
+                aws iam detach-role-policy --role-name "$role" --policy-arn "$policy_arn"
+              done
+              aws iam delete-role --role-name "$role"
+            fi
+          done
+
+          for policy in "${POLICIES[@]}"; do
+            policy_arn=$(aws iam list-policies --scope Local --query "Policies[?PolicyName=='$policy'].Arn" --output text)
+            if [ ! -z "$policy_arn" ]; then
+              echo "Deleting IAM Policy: $policy"
+              aws iam delete-policy --policy-arn "$policy_arn"
+            fi
+          done
+
+          if aws ecr describe-repositories --repository-names "$ECR_REPO" --region us-east-1 2>/dev/null; then
+            echo "Deleting ECR Repository: $ECR_REPO"
+            aws ecr delete-repository --repository-name "$ECR_REPO" --region us-east-1 --force
+          fi
+
+          if aws deploy get-application --application-name "$CODEDEPLOY_APP" --region us-east-1 2>/dev/null; then
+            echo "Deleting CodeDeploy Application: $CODEDEPLOY_APP"
+            aws deploy delete-application --application-name "$CODEDEPLOY_APP" --region us-east-1
+          fi
+
+          echo "✅ Cleanup complete."
+        shell: bash
       - name: Terraform Apply
         run: |
           cd terraform

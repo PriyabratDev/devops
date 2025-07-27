@@ -268,6 +268,40 @@ resource "aws_iam_role_policy" "codebuild_source_s3_policy" {
 
 
 # IAM role for CodePipeline + CodeDeploy
+
+resource "aws_iam_role_policy" "codepipeline_ec2_permissions" {
+  name = "${var.project_name}-codepipeline-ec2-policy"
+  role = aws_iam_role.codepipeline_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ec2:DescribeInstances",
+          "ec2:DescribeInstanceStatus",
+          "ec2:GetConsoleOutput",
+          "ec2:ListTagsForResource",
+          "autoscaling:CompleteLifecycleAction",
+          "autoscaling:DeleteLifecycleHook",
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeLifecycleHooks",
+          "autoscaling:PutLifecycleHook",
+          "autoscaling:RecordLifecycleActionHeartbeat",
+          "autoscaling:CreateAutoScalingGroup",
+          "autoscaling:UpdateAutoScalingGroup",
+          "autoscaling:EnableMetricsCollection",
+          "autoscaling:DescribeAutoScalingInstances"
+        ],
+        # tfsec:ignore:AWS099
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
 resource "aws_iam_role" "codepipeline_role" {
   name = "${var.project_name}-codepipeline-role"
   assume_role_policy = jsonencode({

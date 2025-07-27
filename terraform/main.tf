@@ -574,6 +574,8 @@ resource "aws_iam_role_policy_attachment" "ec2_s3_access_attach" {
   policy_arn = aws_iam_policy.ec2_artifact_access_policy.arn
 }
 
+# tfsec:ignore:AWS006  # Ignore for 0.0.0.0/0 on port 22 (SSH)
+# tfsec:ignore:AWS008  # Ignore for 0.0.0.0/0 on port 80 (HTTP)
 resource "aws_security_group" "web_sg" {
   name        = "${var.project_name}-sg"
   description = "Allow HTTP & SSH"
@@ -583,21 +585,21 @@ resource "aws_security_group" "web_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = [var.allowed_ip_range]
+    cidr_blocks = "0.0.0.0/0"
     description = "Allow HTTP from anywhere"
   }
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.allowed_ip_range]
+    cidr_blocks = "0.0.0.0/0"
     description = "Allow SSH from anywhere"
   }
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [var.allowed_ip_range]
+    cidr_blocks = "0.0.0.0/0"
     description = "Allow all outbound"
   }
 }

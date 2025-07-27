@@ -55,14 +55,3 @@ variable "instance_tag_key" {
 variable "instance_tag_value" {
   default = "webserver"
 }
-
-variable "allowed_ip_range" {
-  description = "CIDR range for inbound access (e.g., '10.0.0.0/16', '192.168.1.0/24')"
-  type        = string
-  default = "106.222.191.221/32"
-  
-  validation {
-    condition     = can(cidrhost(var.allowed_ip_range, 0))
-    error_message = "The allowed_ip_range must be a valid CIDR block"
-  }
-}

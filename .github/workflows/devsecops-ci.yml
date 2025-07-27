@@ -101,4 +101,5 @@ jobs:
         run: kubectl apply -f k8s/secrets/sealed-secret.yaml
 
       - name: Deploy App to Kubernetes
+        if: false
         run: kubectl apply -f k8s/deployment.yaml

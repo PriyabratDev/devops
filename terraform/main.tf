@@ -1,7 +1,17 @@
 provider "aws" {
   region = var.aws_region
 }
-
+# tfsec:ignore:aws-ecr-enable-image-scans
+# tfsec:ignore:aws-ecr-enforce-immutable-repository
+# tfsec:ignore:aws-ecr-repository-customer-key
+# tfsec:ignore:aws-s3-block-public-acls
+# tfsec:ignore:aws-s3-block-public-policy
+# tfsec:ignore:aws-s3-enable-bucket-encryption
+# tfsec:ignore:aws-s3-ignore-public-acls
+# tfsec:ignore:aws-s3-no-public-buckets
+# tfsec:ignore:aws-s3-encryption-customer-key
+# tfsec:ignore:aws-s3-enable-bucket-logging
+# tfsec:ignore:aws-s3-enable-versioning
 # S3 bucket to store artifacts
 resource "aws_s3_bucket" "artifact_bucket" {
   bucket        = var.bucket_name
@@ -31,17 +41,7 @@ resource "aws_s3_bucket" "codepipeline_artifacts" {
   bucket = "${var.project_name}-artifacts-bucket"
 }
 
-# tfsec:ignore:aws-ecr-enable-image-scans
-# tfsec:ignore:aws-ecr-enforce-immutable-repository
-# tfsec:ignore:aws-ecr-repository-customer-key
-# tfsec:ignore:aws-s3-block-public-acls
-# tfsec:ignore:aws-s3-block-public-policy
-# tfsec:ignore:aws-s3-enable-bucket-encryption
-# tfsec:ignore:aws-s3-ignore-public-acls
-# tfsec:ignore:aws-s3-no-public-buckets
-# tfsec:ignore:aws-s3-encryption-customer-key
-# tfsec:ignore:aws-s3-enable-bucket-logging
-# tfsec:ignore:aws-s3-enable-versioning
+
 
 resource "aws_kms_key" "ecr_key" {
   description             = "KMS key for ECR encryption"

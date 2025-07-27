@@ -48,7 +48,9 @@ jobs:
       - name: Terraform Apply
         run: |
           cd terraform
-          export TF_VAR_project_name="devscops-${{ github.run_id }}"
+          export UNIQUE_ID="${{ github.run_id }}"
+          export TF_VAR_project_name="devscops-${UNIQUE_ID}"
+          export TF_VAR_bucket_name="my-artifact-bucket-${UNIQUE_ID}"
           terraform apply -auto-approve -input=false \
           -var "allowed_ip_range=106.222.191.221/32"
 

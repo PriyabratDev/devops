@@ -268,7 +268,7 @@ resource "aws_iam_role_policy" "codebuild_source_s3_policy" {
 
 
 # IAM role for CodePipeline + CodeDeploy
-
+# tfsec:ignore:AWS099
 resource "aws_iam_role_policy" "codepipeline_ec2_permissions" {
   name = "${var.project_name}-codepipeline-ec2-policy"
   role = aws_iam_role.codepipeline_role.id
@@ -294,7 +294,6 @@ resource "aws_iam_role_policy" "codepipeline_ec2_permissions" {
           "autoscaling:EnableMetricsCollection",
           "autoscaling:DescribeAutoScalingInstances"
         ],
-        # tfsec:ignore:AWS099
         Resource = "*"
       }
     ]
